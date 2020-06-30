@@ -1,0 +1,116 @@
+<html>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+	<script src="https://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+	<script src="https://grey.paysky.io:9006/invchost/JS/LightBox.js"></script>
+<body>
+<div class="container-fluid">
+
+    <div class="col m-5">
+        <h2> PaySky Lightbox Sample </h2>
+    </div>
+    <div class="col p-5">
+        <button type="button" class="btn btn-info btn-block" onclick="callLightBox(200,'1')">Pay</button>
+    </div>
+    <div class="col p-5">
+        <h3 class="text-center" id="resultTitle" style="visibility: hidden;">Callback Result</h3>
+        <div class="table-responsive-md" id="successResult" style="display: none;">
+            <label class="form-label text-success"><b>Success</b></label>
+            <table class="table">
+                <thead class="bg-info">
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">System Reference</th>
+                    <th scope="col">Network</th>
+                    <th scope="col">Merchant Reference</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Currency</th>
+                    <th scope="col">Paid Through</th>
+                    <th scope="col">Payer Account</th>
+                    <th scope="col">Payer Name</th>
+                    <th scope="col">Secure Hash</th>
+                    <th scope="col">Provider Scheme Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr id="paymentlnfoTable"></tr>
+                </tbody>
+            </table>
+
+        </div>
+
+        <div id="errorResult" style="display: none;">
+            <label class="form-label text-danger"><b>Error</b></label>
+            <h4>
+                <span class="badge badge-danger">Error Happened when trying perform transaction</span>
+            </h4>
+        </div>
+
+        <div id="cancelResult" style="display: none;">
+            <label class="form-label text-warning"><b>Cancel</b></label>
+            <h4>
+                <span class="badge badge-warning">Cancelling operation Happened</span>
+            </h4>
+        </div>
+    </div>
+
+
+</div>
+
+<script type="text/javascript">
+	// amount : amount requested in pounds
+	// ref : Merchant refrence ( example: userid ) it'll be returned with transaction info as MerchantReference
+    function callLightBox(amount,ref){
+        var merchantld = 'xxxx';		// Replace with merchantld
+        var terminalld = 'xxxx';		// Replace with terminalld
+        Lightbox.Checkout.configure= {
+            Orderld: '',
+            MID: merchantld,
+            TID: terminalld,
+            AmountTrxn: amount*100,		// *100 to convert cents to pound
+            MerchantReference: ref,		// Merchant refrence ( example: userid ) it'll be returned with transaction info as MerchantReference
+
+            completeCallback: function (data) {
+                console.log('completed');
+                $('#resultTitle').css('visibility', 'visible');
+                $('#successResult').css('display', 'block');
+                $('#paymentlnfoTable').html('<td>' + data.TxnDate + '</td>'
+                        + '<td>' + data.SystemReference + '</td>'
+                        + '<td>' + data.NetworkReference + '</td>'
+                        + '<td>' + data.MerchantReference + '</td>'
+                        + '<td>' + data.Amount + '</td>'
+                        + '<td>' + data.Currency + '</td>'
+                        + '<td>' + data.PaidThrough + '</td>'
+                        + '<td>' + data.PayerAccount + '</td>'
+                        + '<td>' + data.PayerName + '</td>'
+                        + '<td>' + data.SecureHash + '</td>'
+                        + '<td>' + data.ProviderSchemeName + '</td>');
+                console.log(data);
+                $.ajax
+                ({
+                    url: 'ajax_file.php',
+                    data: 'refrence=' + data.SystemReference,		// transactionID
+                    type: "post",
+                    success: function (serverResponse) {
+                        // check transactionID and return successfull payment
+                    }
+                });
+            },
+            errorCallback: function () {
+                console.log('error');
+                $('#resultTitle').css('visibility', 'visible');
+                $('#errorResult').css('display', 'block');
+            },
+            cancelCallback: function () {
+                $('#resultTitle').css('visibility', 'visible');
+                $('#cancelResult').css('display', 'block');
+                console.log('cancel');
+            }
+        };
+        Lightbox.Checkout.showLightbox();
+    };
+
+</script>
+</body>
+</html>
